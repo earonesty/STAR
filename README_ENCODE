@@ -1,0 +1,21 @@
+# For ENCODE-adherent BAM run the following bash script, modifying the necessary input parameters
+# parametersENCODElong.txt and commentsENCODElong.txt file are included in the GIT distribution
+
+STAR=/path/to/STAR
+paramFile=/path/to/parametersENCODElong.txt
+commentFile=/path/to/commentsENCODElong.txt
+read1=/path/to/read1.fastq.gz #gzipped fastq file from Illumina
+read2=/path/to/read2.fastq.gz #gzipped fastq file from Illumina
+genomeDir=/path/to/genome_directory
+workDir=./
+outputName=OutputAlignments # no .bam suffix
+Samtools=samtools
+
+samtoolsCommand="$Samtools view -buS - | $Samtools sort -m20G - $workDir/$outputName"
+
+
+$STAR --parametersFiles $paramFile --readFilesIn $read1 $read2 --genomeDir $genomeDir --outFileNamePrefix $workDir --runThreadN 12 \
+ --outSAMheaderCommentFile $commentFile --outSAMheaderHD @HD VN:1.4 SO:coordinate \
+ --outSAMheaderPG @PG ID:Samtools PN:Samtools CL:"$samtoolsCommand" PP:STAR VN:0.1.18 \
+ --outStd SAM --readFilesCommand zcat | $Samtools view -buS - | $Samtools sort -m20G - $workDir/$outputName
+
